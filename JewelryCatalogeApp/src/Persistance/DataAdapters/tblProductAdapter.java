@@ -5,8 +5,8 @@
  */
 package Persistance.DataAdapters;
 
-import Persistance.JDBCMySQL;
 import Beans.ProductDetail;
+import Persistance.JDBCMySQL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,22 +32,23 @@ public class tblProductAdapter {
             c = conn.connectionDB();
             PreparedStatement verificarStmt
                     = c.prepareStatement("SELECT"
-                            + "   product_id  AS id "
-                            + "   ,product_name AS name "
-                            + "   ,product_description AS description "
-                            + "   ,product_price AS price "
-                            + "   ,product_stock AS stock "
-                            + "   ,category_id"
-                            + "   ,category_name AS category "
-                            + "   FROM products p "
-                            + "   JOIN product_categories pc "
+                            + "   product_id  AS id                        "
+                            + "   ,product_name AS name                    "
+                            + "   ,product_description AS description      "
+                            + "   ,product_price AS price                  "
+                            + "   ,product_stock AS stock                  "
+                            + "   ,category_id                             "
+                            + "   ,category_name AS category               "
+                            + "   FROM products p                          "
+                            + "   JOIN product_categories pc               "
                             + "   ON p.product_category_id =pc.category_id "
-                            + "   ORDER BY p.product_id ASC ");
+                            + "   ORDER BY p.product_id ASC                ");
 
             ResultSet rs = verificarStmt.executeQuery();
 
             while (rs.next()) {
-                ProductDetail prod = new ProductDetail(rs.getInt("id"), rs.getString("name"), rs.getString("description"), rs.getDouble("price"), rs.getInt("stock"), rs.getInt("category_id"), rs.getString("category"));
+                ProductDetail prod = new ProductDetail(rs.getInt("id"), rs.getString("name"), rs.getString("description"),
+                        rs.getDouble("price"), rs.getInt("stock"), rs.getInt("category_id"), rs.getString("category"));
                 rsProduct.add(prod);
             }
 
@@ -64,7 +65,7 @@ public class tblProductAdapter {
         return null;
     }
 
-    public List<ProductDetail> Select2(List CategoryFilter) {
+    public List<ProductDetail> SelectByCategory(String searchFilter) {
 
         try {
             List<ProductDetail> rsProduct = new ArrayList<>();
@@ -81,19 +82,16 @@ public class tblProductAdapter {
                             + "   FROM products p "
                             + "   JOIN product_categories pc "
                             + "   ON p.product_category_id = pc.category_id "
-                            + "   WHERE category_name IN (?)"
+                            + "   WHERE category_name LIKE ? "
                             + "   ORDER BY p.product_id ASC ");
 
-            // verificarStmt.setString(1, "aretes");
-            for (int i = 0; i < CategoryFilter.size(); i++) {
-                System.out.println(i + CategoryFilter.get(i).toString());
-                verificarStmt.setString(1, CategoryFilter.get(i).toString());
-            }
+            verificarStmt.setString(1, searchFilter);
 
             ResultSet rs = verificarStmt.executeQuery();
 
             while (rs.next()) {
-                ProductDetail prod = new ProductDetail(rs.getInt("id"), rs.getString("name"), rs.getString("description"), rs.getDouble("price"), rs.getInt("stock"), rs.getInt("category_id"), rs.getString("category"));
+                ProductDetail prod = new ProductDetail(rs.getInt("id"), rs.getString("name"), rs.getString("description"),
+                        rs.getDouble("price"), rs.getInt("stock"), rs.getInt("category_id"), rs.getString("category"));
                 rsProduct.add(prod);
             }
 

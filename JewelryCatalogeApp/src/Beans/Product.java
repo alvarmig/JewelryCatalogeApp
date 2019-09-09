@@ -14,8 +14,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
+ * Product class that represents the product table from the silmara database.
  *
- * @author Miguel
+ * @author Miguel Alvarado
  */
 public class Product implements Serializable {
 

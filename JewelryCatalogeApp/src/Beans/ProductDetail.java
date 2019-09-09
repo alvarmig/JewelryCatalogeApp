@@ -14,8 +14,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
+ * Category class that represents the JOIN between product and category tables
+ * from the silmara database.
  *
- * @author Miguel
+ * @author Miguel Alvarado
  */
 public class ProductDetail implements Serializable {
 

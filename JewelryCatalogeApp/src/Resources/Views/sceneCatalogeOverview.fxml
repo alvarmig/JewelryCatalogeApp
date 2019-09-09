@@ -13,7 +13,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -27,9 +26,9 @@
               <tabs>
                 <Tab text="Product Details">
                   <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="358.0" prefWidth="803.0">
+                    <AnchorPane fx:id="filterArea" minHeight="0.0" minWidth="0.0" prefHeight="358.0" prefWidth="803.0">
                            <children>
-                              <SplitPane dividerPositions="0.5830212234706617" prefHeight="422.0" prefWidth="847.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="29.0">
+                              <SplitPane dividerPositions="0.5830212234706617" prefHeight="393.0" prefWidth="847.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="29.0">
                                 <items>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="408.0" prefWidth="400.0">
                                        <children>
@@ -79,33 +78,22 @@
                                           </GridPane>
                                           <ButtonBar layoutX="14.0" layoutY="342.0" prefHeight="40.0" prefWidth="273.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="45.0">
                                              <buttons>
-                                              <Button fx:id="btnNewProduct" mnemonicParsing="false" onAction="#NewProduct_ActionPerformed" prefHeight="25.0" prefWidth="61.0" text="New..." />
-                                                <Button fx:id="btnSaveProduct" disable="true" mnemonicParsing="false" onAction="#handleSave" prefHeight="25.0" prefWidth="61.0" text="Save..." />
-                                                <Button fx:id="btnDeleteProduct" mnemonicParsing="false" onAction="#handleDeleteProduct" prefHeight="25.0" prefWidth="61.0" text="Delete" />
+                                              <Button fx:id="btnNewProduct" mnemonicParsing="false" onAction="#btnNewProduct_ActionPerformed" prefHeight="25.0" prefWidth="61.0" text="New..." />
+                                                <Button fx:id="btnSaveProduct" disable="true" mnemonicParsing="false" onAction="#btnSaveProduct_ActionPerformed" prefHeight="25.0" prefWidth="61.0" text="Save..." />
+                                                <Button fx:id="btnDeleteProduct" mnemonicParsing="false" onAction="#btnDelete_ActionPerformed" prefHeight="25.0" prefWidth="61.0" text="Delete" />
                                              </buttons>
                                           </ButtonBar>
-                                          <Button fx:id="btnEditProduct" disable="true" layoutX="223.0" layoutY="205.0" mnemonicParsing="false" onAction="#handleEdit" text="Edit" />
-                                          <Button fx:id="btnCancelProduct" layoutX="270.0" layoutY="205.0" mnemonicParsing="false" onAction="#Cancel_ActionPerformed" text="Cancel" />
+                                          <Button fx:id="btnEditProduct" disable="true" layoutX="223.0" layoutY="205.0" mnemonicParsing="false" onAction="#btnEdit_ActionPerformed" text="Edit" />
+                                          <Button fx:id="btnCancelProduct" layoutX="270.0" layoutY="205.0" mnemonicParsing="false" onAction="#btnCancel_ActionPerformed" text="Cancel" />
                                        </children>
                                     </AnchorPane>
                                 </items>
                               </SplitPane>
-                              <TitledPane fx:id="categoryFilter" animated="false" expanded="false" layoutX="490.0" layoutY="1.0" prefHeight="200.0" prefWidth="200.0" text="Category filter">
-                                 <content>
-                                    <AnchorPane fx:id="filterArea" prefHeight="147.0" prefWidth="151.0">
-                                       <children>
-                                          <Button fx:id="btnFilterCategory" layoutX="121.0" layoutY="133.0" mnemonicParsing="false" onAction="#handleBtnFilterCategory" text="Filter" />
-                                       </children>
-                                    </AnchorPane>
-                                 </content>
-                              </TitledPane>
+                              <TextField fx:id="txtSearch" layoutX="611.0" layoutY="2.0" onAction="#btnSearch_ActionPerformed" />
+                              <Label layoutX="497.0" layoutY="5.0" text="Search by Category:" />
+                              <Button fx:id="btnSearch" layoutX="765.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnSearch_ActionPerformed" text="Search" />
                            </children>
                         </AnchorPane>
-                  </content>
-                </Tab>
-                <Tab text="Orders Details">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                   </content>
                 </Tab>
               </tabs>

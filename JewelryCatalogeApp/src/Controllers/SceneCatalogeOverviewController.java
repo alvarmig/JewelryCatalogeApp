@@ -10,27 +10,22 @@ import Beans.ProductDetail;
 import Persistance.DataAdapters.tblCategoryAdapter;
 import Persistance.DataAdapters.tblProductAdapter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 /**
  * FXML Controller class
@@ -42,11 +37,9 @@ public class SceneCatalogeOverviewController implements Initializable {
     ObservableList<Category> categoryData = FXCollections.observableArrayList();
     tblProductAdapter tblProduct = new tblProductAdapter();
     tblCategoryAdapter tblCategory = new tblCategoryAdapter();
-    Category currentCategory = new Category(1, "cadenas lentes");
 
     private Stage dialogStage;
     private String buttonState = "default";
-    private String filter = "off";
 
     @FXML
     private ResourceBundle resources;
@@ -75,9 +68,8 @@ public class SceneCatalogeOverviewController implements Initializable {
     @FXML
     private TableColumn<ProductDetail, String> colCategory;
 
-    @FXML
-    private TableColumn<ProductDetail, Number> colCategoryId;
-
+    /*@FXML
+    private TableColumn<ProductDetail, Number> colCategoryId;*/
     @FXML
     private TextField txtProductName;
 
@@ -112,16 +104,19 @@ public class SceneCatalogeOverviewController implements Initializable {
     private AnchorPane filterArea;
 
     @FXML
-    private Button btnFilterCategory;
+    private TextField txtSearch;
 
     @FXML
-    void Cancel_ActionPerformed(ActionEvent event) {
+    private Button btnSearch;
+
+    @FXML
+    private void btnCancel_ActionPerformed(ActionEvent event) {
         disableFields();
         enableDisableButtons("cancel");
     }
 
     @FXML
-    private void NewProduct_ActionPerformed(ActionEvent event) {
+    private void btnNewProduct_ActionPerformed(ActionEvent event) {
         enabledFields();
         clearFields();
         enableDisableButtons("new");
@@ -129,14 +124,14 @@ public class SceneCatalogeOverviewController implements Initializable {
     }
 
     @FXML
-    private void handleEdit(ActionEvent event) {
+    private void btnEdit_ActionPerformed(ActionEvent event) {
         enabledFields();
         buttonState = "edit";
         enableDisableButtons("edit");
     }
 
     @FXML
-    private void handleSave(ActionEvent event) {
+    private void btnSaveProduct_ActionPerformed(ActionEvent event) {
 
         if ("new".equals(buttonState)) {
             if (saveItem()) {
@@ -155,16 +150,15 @@ public class SceneCatalogeOverviewController implements Initializable {
     }
 
     @FXML
-    private void handleDeleteProduct(ActionEvent event) {
+    private void btnDelete_ActionPerformed(ActionEvent event) {
         int selectedIndex = tbProductDetails.getSelectionModel().getSelectedIndex();
         int selectedID = 0;
 
         if (selectedIndex >= 0) {
             selectedID = tbProductDetails.getSelectionModel().getSelectedItem().getProductId();
             if (confirmationDialog("Delete selected", selectedID)) {
-                //tbProductDetails.getItems().remove(selectedIndex);
                 tblProduct.Delete(selectedID);
-                loadTableCurrency();
+                loadTableProducts();
                 enableDisableButtons("delete");
             }
 
@@ -181,8 +175,16 @@ public class SceneCatalogeOverviewController implements Initializable {
     }
 
     @FXML
-    private void handleBtnFilterCategory(ActionEvent event) {
-        filter = "on";
+    public void btnSearch_ActionPerformed(ActionEvent event) {
+        StringBuilder filter = new StringBuilder();
+        filter.append('%');
+        if ("".equals(txtSearch.getText())) {
+            loadTableProducts();
+        } else {
+            filter.append(txtSearch.getText().toLowerCase());
+            filter.append('%');
+            loadTableProductsByCategory(filter.toString());
+        }
 
     }
 
@@ -195,7 +197,6 @@ public class SceneCatalogeOverviewController implements Initializable {
         assert colPrice != null : "fx:id=\"colPrice\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
         assert colStock != null : "fx:id=\"colStock\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
         assert colCategory != null : "fx:id=\"colCategory\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
-        assert colCategoryId != null : "fx:id=\"colCategoryId\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
         assert txtProductName != null : "fx:id=\"txtProductName\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
         assert txtDescription != null : "fx:id=\"txtDescription\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
         assert txtPrice != null : "fx:id=\"txtPrice\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
@@ -207,64 +208,66 @@ public class SceneCatalogeOverviewController implements Initializable {
         assert btnEditProduct != null : "fx:id=\"btnEditProduct\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
         assert btnCancelProduct != null : "fx:id=\"btnCancelProduct\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
         assert filterArea != null : "fx:id=\"filterArea\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
-        assert btnFilterCategory != null : "fx:id=\"btnFilterCategory\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
+        assert txtSearch != null : "fx:id=\"txtSearch\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
+        assert btnSearch != null : "fx:id=\"btnSearch\" was not injected: check your FXML file 'sceneCatalogeOverview.fxml'.";
+
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
         colID.setCellValueFactory(cellData -> cellData.getValue().productIdProperty());
         colName.setCellValueFactory(cellData -> cellData.getValue().productNameProperty());
         colDescription.setCellValueFactory(cellData -> cellData.getValue().productDescriptionProperty());
         colPrice.setCellValueFactory(cellData -> cellData.getValue().productPriceProperty());
         colStock.setCellValueFactory(cellData -> cellData.getValue().productStockProperty());
         colCategory.setCellValueFactory(cellData -> cellData.getValue().productCategoryProperty());
-        colCategoryId.setCellValueFactory(cellData -> cellData.getValue().productCategoryIdProperty());
 
         showProductDetails(null);
 
-        loadTableCurrency();
+        loadTableProducts();
         loadChoiceBoxCategory();
-        loadCheckBoxCategory();
         enableDisableButtons("default");
 
         tbProductDetails.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showProductDetails(newValue));
+
+        /* tbProductDetails.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observableValue, Object oldValue, Object newValue) {
+
+
+            }
+        }
+        );*/
     }
 
-    private void loadTableCurrency() {
-        tbProductDetails.getItems().clear();
-        tbProductDetails.getColumns().clear();
-
-        ObservableList<ProductDetail> productData = FXCollections.observableArrayList(tblProduct.Select());
+    private void loadTable() {
         tbProductDetails.getColumns().addAll(colID);
         tbProductDetails.getColumns().addAll(colName);
         tbProductDetails.getColumns().addAll(colDescription);
         tbProductDetails.getColumns().addAll(colPrice);
         tbProductDetails.getColumns().addAll(colStock);
-        tbProductDetails.getColumns().addAll(colCategoryId);
         tbProductDetails.getColumns().addAll(colCategory);
+    }
 
+    private void loadTableProducts() {
+        tbProductDetails.getItems().clear();
+        tbProductDetails.getColumns().clear();
+
+        ObservableList<ProductDetail> productData = FXCollections.observableArrayList(tblProduct.Select());
+
+        loadTable();
         tbProductDetails.setItems(productData);
 
         clearFields();
     }
 
-    private void loadTableCurrency(List chkBox) {
+    private void loadTableProductsByCategory(String searchFilter) {
         tbProductDetails.getItems().clear();
         tbProductDetails.getColumns().clear();
 
-        ObservableList<ProductDetail> productData = FXCollections.observableArrayList(tblProduct.Select2(chkBox));
-        tbProductDetails.getColumns().addAll(colID);
-        tbProductDetails.getColumns().addAll(colName);
-        tbProductDetails.getColumns().addAll(colDescription);
-        tbProductDetails.getColumns().addAll(colPrice);
-        tbProductDetails.getColumns().addAll(colStock);
-        tbProductDetails.getColumns().addAll(colCategoryId);
-        tbProductDetails.getColumns().addAll(colCategory);
+        ObservableList<ProductDetail> productData = FXCollections.observableArrayList(tblProduct.SelectByCategory(searchFilter));
+        loadTable();
 
         tbProductDetails.setItems(productData);
 
@@ -278,18 +281,12 @@ public class SceneCatalogeOverviewController implements Initializable {
             txtDescription.setText(prod.getProductDescription());
             txtPrice.setText(Double.toString(prod.getProductPrice()));
             txtStock.setText(Integer.toString(prod.getProductStock()));
-            // choiceBoxCategory.getSelectionModel().select((int) colCategoryId.getCellData(prod) - 1);
-            Category cat = new Category(prod.getProductCategoryId(), prod.getProductCategory());
-            //currentCategory.setID(prod.getProductCategoryId());
-            //currentCategory.setName(prod.getProductCategory());
-            System.out.println(currentCategory.getName());
-            System.out.println(currentCategory.getID());
-            //ObservableList<Category> categoryData = FXCollections.observableArrayList(cat);
-            //choiceBoxCategory.getItems().addAll(categoryData);
-            choiceBoxCategory.setValue(cat);
 
-            System.out.println(choiceBoxCategory.getValue().getName());
-            System.out.println(choiceBoxCategory.getValue().getID());
+            for (int i = 0; i < categoryData.size(); i++) {
+                if (categoryData.get(i).getName() == null ? prod.getProductCategory() == null : categoryData.get(i).getName().equals(prod.getProductCategory())) {
+                    choiceBoxCategory.setValue(categoryData.get(i));
+                }
+            }
 
             buttonState = "listener";
             enableDisableButtons("listener");
@@ -303,59 +300,6 @@ public class SceneCatalogeOverviewController implements Initializable {
         choiceBoxCategory.getItems().clear();
         categoryData = FXCollections.observableArrayList(tblCategory.Select());
         choiceBoxCategory.getItems().addAll(categoryData);
-
-        choiceBoxCategory.setConverter(new StringConverter<Category>() {
-            @Override
-            public String toString(Category object) {
-                return object.getName();
-            }
-
-            @Override
-            public Category fromString(String string) {
-                return null;
-            }
-        });
-    }
-
-    private void loadCheckBoxCategory() {
-        int j = 0;
-        List<String> chBoxes = new ArrayList<String>();
-        for (int i = 0; i < categoryData.size(); i++) {
-            CheckBox chBox = new CheckBox(categoryData.get(i).getName());
-
-            filterArea.getChildren().addAll(chBox);
-            chBox.setLayoutY(10 + j);
-            chBox.setLayoutX(20);
-            j += 25;
-
-            chBox.setOnAction(new EventHandler<ActionEvent>() {
-
-                @Override
-                public void handle(ActionEvent event) {
-
-                    if (chBox.isSelected()) {
-                        System.out.println(chBox.getText());
-                        chBoxes.add(chBox.getText());
-                        loadTableCurrency();
-
-                    } else if (!chBox.isSelected()) {
-                        chBoxes.remove(chBox.getText());
-                    }
-
-                    if (chBoxes.isEmpty()) {
-                        loadTableCurrency();
-                    } else {
-                        loadTableCurrency(chBoxes);
-                    }
-
-                    filter = "off";
-
-                    System.out.println(chBoxes);
-                }
-            });
-
-        }
-
     }
 
     private boolean saveItem() {
@@ -363,7 +307,7 @@ public class SceneCatalogeOverviewController implements Initializable {
             if (confirmationDialog("Create new", 0)) {
                 int idCategory = choiceBoxCategory.getValue().getID();
                 if (tblProduct.Insert(txtProductName.getText(), txtDescription.getText(), Double.parseDouble(txtPrice.getText()), Integer.parseInt(txtStock.getText()), idCategory) == 1) {
-                    loadTableCurrency();
+                    loadTableProducts();
                     disableFields();
                     return true;
                 }
@@ -384,7 +328,6 @@ public class SceneCatalogeOverviewController implements Initializable {
             alert.setContentText(errorMessage);
 
             alert.showAndWait();
-            //enableDisableButtons("edit");
 
         } else {
             if (isInputValid()) {
@@ -393,7 +336,7 @@ public class SceneCatalogeOverviewController implements Initializable {
                     int idCategory = choiceBoxCategory.getValue().getID();
 
                     if (tblProduct.Update(id, txtProductName.getText(), txtDescription.getText(), Double.parseDouble(txtPrice.getText()), Integer.parseInt(txtStock.getText()), idCategory) == 1) {
-                        loadTableCurrency();
+                        loadTableProducts();
                         disableFields();
                         return true;
                     }

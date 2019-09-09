@@ -13,8 +13,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
+ * Category class that represents the categroy table from the silmara database.
  *
- * @author Miguel
+ * @author Miguel Alvarado
  */
 public class Category implements Serializable {
 
@@ -55,8 +56,8 @@ public class Category implements Serializable {
         name.set(Name);
     }
 
-    /*@Override
+    @Override
     public String toString() {
         return getName();
-    }*/
+    }
 }
