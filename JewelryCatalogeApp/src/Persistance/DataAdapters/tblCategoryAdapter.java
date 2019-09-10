@@ -5,8 +5,8 @@
  */
 package Persistance.DataAdapters;
 
-import Persistance.JDBCMySQL;
 import Beans.Category;
+import Persistance.JDBCMySQL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * tblCategoryAdapter has the CRUD operations to the product_categories table.
  *
  * @author Miguel
  */
@@ -25,11 +26,18 @@ public class tblCategoryAdapter {
     JDBCMySQL conn = new JDBCMySQL();
     Connection c = null;
 
+    /**
+     * Select will get the columns id and name from the product_categories
+     * table. This method return an array list of category objects.
+     *
+     * @return List
+     */
     public List<Category> Select() {
 
         try {
             List<Category> rsCategory = new ArrayList<>();
             c = conn.connectionDB();
+            // Set the prepared statement.
             PreparedStatement verificarStmt
                     = c.prepareStatement("SELECT"
                             + "   category_id AS id "
@@ -38,6 +46,7 @@ public class tblCategoryAdapter {
 
             ResultSet rs = verificarStmt.executeQuery();
 
+            // process the result set into a list of Category objects.
             while (rs.next()) {
 
                 Category cat = new Category(rs.getInt("id"), rs.getString("name"));
@@ -50,7 +59,7 @@ public class tblCategoryAdapter {
         } catch (SQLException ex) {
             Logger.getLogger(tblCategoryAdapter.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-
+            // Close the connection.
             conn.disconnection(c);
         }
         return null;

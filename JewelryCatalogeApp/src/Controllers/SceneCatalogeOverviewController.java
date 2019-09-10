@@ -28,7 +28,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
- * FXML Controller class
+ * FXML Controller class that handles all the functionality between the views
+ * and the model for Cataloge application.
  *
  * @author Miguel
  */
@@ -68,8 +69,6 @@ public class SceneCatalogeOverviewController implements Initializable {
     @FXML
     private TableColumn<ProductDetail, String> colCategory;
 
-    /*@FXML
-    private TableColumn<ProductDetail, Number> colCategoryId;*/
     @FXML
     private TextField txtProductName;
 
@@ -109,39 +108,76 @@ public class SceneCatalogeOverviewController implements Initializable {
     @FXML
     private Button btnSearch;
 
+    /**
+     * method: btnCancel_ActionPerformed. Handles the event for the CANCEL
+     * button. When the event is triggered txtFields are disabled and "cancel"
+     * state is passed to set the state of the different buttons.
+     *
+     * @param event
+     */
     @FXML
     private void btnCancel_ActionPerformed(ActionEvent event) {
         disableFields();
+        // set state of the different buttons
         enableDisableButtons("cancel");
     }
 
+    /**
+     * method: btnNewProduct_ActionPerformed. Handles the event for the NEW
+     * button. When the event is triggered txtFields are enabled and cleared.
+     * "new" state is passed to set the state of the different buttons.
+     *
+     * @param event
+     */
     @FXML
     private void btnNewProduct_ActionPerformed(ActionEvent event) {
         enabledFields();
         clearFields();
+        // set state of the different buttons
         enableDisableButtons("new");
         buttonState = "new";
     }
 
+    /**
+     * method: btnEdit_ActionPerformed. Handles the event for the EDIT button.
+     * When the event is triggered txtFields are enabled. "edit" state is passed
+     * to set the state of the different buttons.
+     *
+     * @param event
+     */
     @FXML
     private void btnEdit_ActionPerformed(ActionEvent event) {
         enabledFields();
         buttonState = "edit";
+        // set state of the different buttons
         enableDisableButtons("edit");
     }
 
+    /**
+     * method: btnSaveProduct_ActionPerformed. Handles the event for the SAVE
+     * button. When the event is triggered a saveItem or editItem method will be
+     * called. The action that is called depends on the state of the buttonState
+     * variable. The buttons will be set to the "SAVE" state if the actions is
+     * completed.
+     *
+     * @param event
+     */
     @FXML
     private void btnSaveProduct_ActionPerformed(ActionEvent event) {
-
+        // SAVE the new item created.
         if ("new".equals(buttonState)) {
+            // if the item is saved, set the state of the buttons.
             if (saveItem()) {
+                // set state of the different buttons
                 enableDisableButtons("save");
             } else {
                 enableDisableButtons("new");
             }
-
+            // EDIT the current item selected.
         } else if ("edit".equals(buttonState)) {
+            // if the item is edited, set the state of the buttons.
             if (editItem()) {
+                // set state of the different buttons
                 enableDisableButtons("save");
             } else {
                 enableDisableButtons("edit");
@@ -149,21 +185,36 @@ public class SceneCatalogeOverviewController implements Initializable {
         }
     }
 
+    /**
+     * method: btnDelete_ActionPerformed. Handles the event for the DELETE
+     * button. When the event is triggered the id from the item will be passed
+     * to the Delete CRUD operation from the tblProductAdapter. First a
+     * validation is required to ensure that there the user is selection an item
+     * otherwise an alert will be displayed.
+     *
+     * @param event
+     */
     @FXML
     private void btnDelete_ActionPerformed(ActionEvent event) {
         int selectedIndex = tbProductDetails.getSelectionModel().getSelectedIndex();
         int selectedID = 0;
 
+        // Check if an item is selected from the table.
         if (selectedIndex >= 0) {
+            // get the id from the item selected.
             selectedID = tbProductDetails.getSelectionModel().getSelectedItem().getProductId();
+            // Dialog to confirm the item to be delted.
             if (confirmationDialog("Delete selected", selectedID)) {
+                // DELTE CRUD operation.
                 tblProduct.Delete(selectedID);
+                // reload the table
                 loadTableProducts();
+                // set the state of the buttons.
                 enableDisableButtons("delete");
             }
 
         } else {
-            //Nothing selected
+            // If nothing selected, display an alert.
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.initOwner(dialogStage);
             alert.setTitle("No selection");
@@ -174,15 +225,27 @@ public class SceneCatalogeOverviewController implements Initializable {
         }
     }
 
+    /**
+     * method: btnSearch_ActionPerformed. Handles the event for SEARCH button.
+     * This method will load the table if no string is passed to the textSearch
+     * field otherwise it will call the loadTableProductsByCategory if a string
+     * is passed.
+     *
+     * @param event
+     */
     @FXML
-    public void btnSearch_ActionPerformed(ActionEvent event) {
+    private void btnSearch_ActionPerformed(ActionEvent event) {
         StringBuilder filter = new StringBuilder();
-        filter.append('%');
+
+        // load the item table if no string is passed.
         if ("".equals(txtSearch.getText())) {
             loadTableProducts();
         } else {
+            // append % to create the %String% format.
+            filter.append('%');
             filter.append(txtSearch.getText().toLowerCase());
             filter.append('%');
+            // load the table passing the string from the txtSearch field.
             loadTableProductsByCategory(filter.toString());
         }
 
@@ -213,6 +276,12 @@ public class SceneCatalogeOverviewController implements Initializable {
 
     }
 
+    /**
+     * method: initialize. Set the property for each one of the columns of the
+     * table view. Clears the text fields for the product details area. Loads
+     * the table view and the category choiceBox. Add the listener to the table
+     * view.
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         colID.setCellValueFactory(cellData -> cellData.getValue().productIdProperty());
@@ -223,24 +292,26 @@ public class SceneCatalogeOverviewController implements Initializable {
         colCategory.setCellValueFactory(cellData -> cellData.getValue().productCategoryProperty());
 
         showProductDetails(null);
-
         loadTableProducts();
         loadChoiceBoxCategory();
         enableDisableButtons("default");
 
+        // Adds the listener to the selected item from the table view
         tbProductDetails.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showProductDetails(newValue));
 
         /* tbProductDetails.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observableValue, Object oldValue, Object newValue) {
-
-
             }
         }
         );*/
     }
 
+    /**
+     * method: loadTable. Gets the table columns from the tableview and add each
+     * one of the columns.
+     */
     private void loadTable() {
         tbProductDetails.getColumns().addAll(colID);
         tbProductDetails.getColumns().addAll(colName);
@@ -250,40 +321,63 @@ public class SceneCatalogeOverviewController implements Initializable {
         tbProductDetails.getColumns().addAll(colCategory);
     }
 
+    /**
+     * method: loadTableProducts. method that calls the SELECT CRUD operation to
+     * get all the items. The result is passed to an observable list that is
+     * added to the TableView.
+     */
     private void loadTableProducts() {
         tbProductDetails.getItems().clear();
         tbProductDetails.getColumns().clear();
 
+        // Create observable list from the result of the SELECT operation.
         ObservableList<ProductDetail> productData = FXCollections.observableArrayList(tblProduct.Select());
-
         loadTable();
+
+        // Add the observable lis to the TableView
         tbProductDetails.setItems(productData);
 
         clearFields();
     }
 
+    /**
+     * method: loadTableProducts. method that calls the SELECT CRUD operation to
+     * get all the items by category. The result is passed to an observable list
+     * that is added to the TableView.
+     */
     private void loadTableProductsByCategory(String searchFilter) {
         tbProductDetails.getItems().clear();
         tbProductDetails.getColumns().clear();
 
+        // Create observable list from the result of the SELECT operation.
         ObservableList<ProductDetail> productData = FXCollections.observableArrayList(tblProduct.SelectByCategory(searchFilter));
         loadTable();
 
+        // Add the observable lis to the TableView
         tbProductDetails.setItems(productData);
 
         clearFields();
     }
 
-    private void showProductDetails(ProductDetail prod) {
+    /**
+     * method: showProductDetails. This method is called by the listener to
+     * modify the textFileds when an item is selected by the user.
+     *
+     * @param item
+     */
+    private void showProductDetails(ProductDetail item) {
 
-        if (prod != null) {
-            txtProductName.setText(prod.getProductName());
-            txtDescription.setText(prod.getProductDescription());
-            txtPrice.setText(Double.toString(prod.getProductPrice()));
-            txtStock.setText(Integer.toString(prod.getProductStock()));
+        // check that an item has been selected.
+        if (item != null) {
+            // set text fields to the value selected
+            txtProductName.setText(item.getProductName());
+            txtDescription.setText(item.getProductDescription());
+            txtPrice.setText(Double.toString(item.getProductPrice()));
+            txtStock.setText(Integer.toString(item.getProductStock()));
 
+            // set the choiceBox to the value selected.
             for (int i = 0; i < categoryData.size(); i++) {
-                if (categoryData.get(i).getName() == null ? prod.getProductCategory() == null : categoryData.get(i).getName().equals(prod.getProductCategory())) {
+                if (categoryData.get(i).getName() == null ? item.getProductCategory() == null : categoryData.get(i).getName().equals(item.getProductCategory())) {
                     choiceBoxCategory.setValue(categoryData.get(i));
                 }
             }
@@ -296,18 +390,36 @@ public class SceneCatalogeOverviewController implements Initializable {
         }
     }
 
+    /**
+     * method: loadChoiceBoxCategory. Method to fill the choiceBox with the
+     * values from the Category table from the db. A SELECT is used to get the
+     * values from the table.
+     */
     private void loadChoiceBoxCategory() {
         choiceBoxCategory.getItems().clear();
+        // Create observable list from the result of the SELECT operation.
         categoryData = FXCollections.observableArrayList(tblCategory.Select());
         choiceBoxCategory.getItems().addAll(categoryData);
     }
 
+    /**
+     * method: saveItem. This method will call the INSERT CRUD operation to add
+     * a new element to the product table. A confirmation dialog is displayed to
+     * the user before confirmation.
+     *
+     * @return boolean
+     */
     private boolean saveItem() {
+        // check if the input values are valid.
         if (isInputValid()) {
+            // send a confirmation dialog to the user.
             if (confirmationDialog("Create new", 0)) {
                 int idCategory = choiceBoxCategory.getValue().getID();
+                // Call the INSERT CRUD operation to the product table.
                 if (tblProduct.Insert(txtProductName.getText(), txtDescription.getText(), Double.parseDouble(txtPrice.getText()), Integer.parseInt(txtStock.getText()), idCategory) == 1) {
+                    // load the table view.
                     loadTableProducts();
+                    //disable the text and and choicebox.
                     disableFields();
                     return true;
                 }
@@ -316,7 +428,15 @@ public class SceneCatalogeOverviewController implements Initializable {
         return false;
     }
 
+    /**
+     * method: editItem. This method will call the UPDATE CRUD operation to
+     * modify an element that has been selected by the user. A confirmation
+     * dialog is displayed to the user before confirmation.
+     *
+     * @return boolean
+     */
     private boolean editItem() {
+        // A dialog wll display of the edit button is selected without an item available in the table view.
         if (tbProductDetails.getSelectionModel().getSelectedItem() == null) {
 
             String errorMessage = "Please select an item or create a new product";
@@ -330,13 +450,17 @@ public class SceneCatalogeOverviewController implements Initializable {
             alert.showAndWait();
 
         } else {
+            // ccheck that the fields are valid.
             if (isInputValid()) {
+                // send a confirmation dialog to the user.
                 if (confirmationDialog("Edit selected", 0)) {
                     int id = tbProductDetails.getSelectionModel().getSelectedItem().getProductId();
                     int idCategory = choiceBoxCategory.getValue().getID();
-
+                    // Call the UPDATE CRUD operation to the product table.
                     if (tblProduct.Update(id, txtProductName.getText(), txtDescription.getText(), Double.parseDouble(txtPrice.getText()), Integer.parseInt(txtStock.getText()), idCategory) == 1) {
+                        // load the table view.
                         loadTableProducts();
+                        //disable the text and and choicebox.
                         disableFields();
                         return true;
                     }
@@ -346,6 +470,12 @@ public class SceneCatalogeOverviewController implements Initializable {
         return false;
     }
 
+    /**
+     * method: enableDisableButtons. Set the state of the SAVE, CANCEL, EDIT,
+     * NEW buttons. Buttons can be enabled or disabled.
+     *
+     * @param state
+     */
     private void enableDisableButtons(String state) {
 
         if ("new".equals(state) || "edit".equals(state)) {
@@ -408,6 +538,14 @@ public class SceneCatalogeOverviewController implements Initializable {
         choiceBoxCategory.setDisable(false);
     }
 
+    /**
+     * method: confirmationDialog. Displays a confirmation dialog depending on
+     * the string passed to the method.
+     *
+     * @param type
+     * @param id
+     * @return boolean
+     */
     public boolean confirmationDialog(String type, int id) {
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -426,6 +564,12 @@ public class SceneCatalogeOverviewController implements Initializable {
         return result.get() == ButtonType.OK;
     }
 
+    /**
+     * method: isInputValid. Method to verify the text fields and choice box
+     * when a new item is created or when an item is edited.
+     *
+     * @return boolean
+     */
     private boolean isInputValid() {
         StringBuilder errorMessage = new StringBuilder();
 
@@ -438,7 +582,7 @@ public class SceneCatalogeOverviewController implements Initializable {
         if (txtPrice.getText().isEmpty()) {
             errorMessage.append("No valid price value!\n");
         } else {
-            // try to parse theprice into an int.
+            // try to parse the price into an int.
             try {
                 Double.parseDouble(txtPrice.getText());
             } catch (NumberFormatException e) {
