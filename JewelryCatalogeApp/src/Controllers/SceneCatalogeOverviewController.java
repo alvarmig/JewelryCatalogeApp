@@ -12,6 +12,8 @@ import Persistance.DataAdapters.tblProductAdapter;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -291,21 +293,43 @@ public class SceneCatalogeOverviewController implements Initializable {
         colStock.setCellValueFactory(cellData -> cellData.getValue().productStockProperty());
         colCategory.setCellValueFactory(cellData -> cellData.getValue().productCategoryProperty());
 
-        showProductDetails(null);
         loadTableProducts();
         loadChoiceBoxCategory();
         enableDisableButtons("default");
 
-        // Adds the listener to the selected item from the table view
-        tbProductDetails.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> showProductDetails(newValue));
-
-        /* tbProductDetails.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+        // <editor-fold desc="Add lister with lamda function">
+        //showProductDetails(null);
+        /*tbProductDetails.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> showProductDetails(newValue));*/
+        // </editor-fold>
+        /* Adds the listener to the selected item from the table view.
+         * Each time an item from the table view is selected the text fields are filled.
+         */
+        tbProductDetails.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observableValue, Object oldValue, Object newValue) {
+                // check that an item has been selected.
+                if (tbProductDetails.getSelectionModel().getSelectedItem() != null) {
+                    txtProductName.setText(tbProductDetails.getSelectionModel().getSelectedItem().getProductName());
+                    txtDescription.setText(tbProductDetails.getSelectionModel().getSelectedItem().getProductDescription());
+                    txtPrice.setText(Double.toString(tbProductDetails.getSelectionModel().getSelectedItem().getProductPrice()));
+                    txtStock.setText(Integer.toString(tbProductDetails.getSelectionModel().getSelectedItem().getProductStock()));
+
+                    // set the choiceBox to the value selected.
+                    for (int i = 0; i < categoryData.size(); i++) {
+                        if (categoryData.get(i).getName() == null ? tbProductDetails.getSelectionModel().getSelectedItem().getProductCategory() == null
+                                : categoryData.get(i).getName().equals(tbProductDetails.getSelectionModel().getSelectedItem().getProductCategory())) {
+                            choiceBoxCategory.setValue(categoryData.get(i));
+                        }
+                    }
+                    buttonState = "listener";
+                    enableDisableButtons("listener");
+                    disableFields();
+                } else {
+                    clearFields();
+                }
             }
-        }
-        );*/
+        });
     }
 
     /**
@@ -357,37 +381,6 @@ public class SceneCatalogeOverviewController implements Initializable {
         tbProductDetails.setItems(productData);
 
         clearFields();
-    }
-
-    /**
-     * method: showProductDetails. This method is called by the listener to
-     * modify the textFileds when an item is selected by the user.
-     *
-     * @param item
-     */
-    private void showProductDetails(ProductDetail item) {
-
-        // check that an item has been selected.
-        if (item != null) {
-            // set text fields to the value selected
-            txtProductName.setText(item.getProductName());
-            txtDescription.setText(item.getProductDescription());
-            txtPrice.setText(Double.toString(item.getProductPrice()));
-            txtStock.setText(Integer.toString(item.getProductStock()));
-
-            // set the choiceBox to the value selected.
-            for (int i = 0; i < categoryData.size(); i++) {
-                if (categoryData.get(i).getName() == null ? item.getProductCategory() == null : categoryData.get(i).getName().equals(item.getProductCategory())) {
-                    choiceBoxCategory.setValue(categoryData.get(i));
-                }
-            }
-
-            buttonState = "listener";
-            enableDisableButtons("listener");
-            disableFields();
-        } else {
-            clearFields();
-        }
     }
 
     /**
@@ -582,7 +575,7 @@ public class SceneCatalogeOverviewController implements Initializable {
         if (txtPrice.getText().isEmpty()) {
             errorMessage.append("No valid price value!\n");
         } else {
-            // try to parse the price into an int.
+            // try to parse the price into a Double.
             try {
                 Double.parseDouble(txtPrice.getText());
             } catch (NumberFormatException e) {
@@ -594,9 +587,9 @@ public class SceneCatalogeOverviewController implements Initializable {
         } else {
             // try to parse the stock value into an int.
             try {
-                Double.parseDouble(txtStock.getText());
+                Integer.parseInt(txtStock.getText());
             } catch (NumberFormatException e) {
-                errorMessage.append("No valid price (must be a number)!\n");
+                errorMessage.append("No valid stock value (must be a round number)!\n");
             }
         }
         if (choiceBoxCategory.getValue() == null) {
@@ -618,4 +611,37 @@ public class SceneCatalogeOverviewController implements Initializable {
             return false;
         }
     }
+
+    // <editor-fold desc="Add lister with lamda function, Called method">
+    /**
+     * method: showProductDetails. This method is called by the listener to
+     * modify the textFileds when an item is selected by the user.
+     *
+     * @param item
+     */
+    private void showProductDetails(ProductDetail item) {
+
+        // check that an item has been selected.
+        if (item != null) {
+            // set text fields to the value selected
+            txtProductName.setText(item.getProductName());
+            txtDescription.setText(item.getProductDescription());
+            txtPrice.setText(Double.toString(item.getProductPrice()));
+            txtStock.setText(Integer.toString(item.getProductStock()));
+
+            // set the choiceBox to the value selected.
+            for (int i = 0; i < categoryData.size(); i++) {
+                if (categoryData.get(i).getName() == null ? item.getProductCategory() == null : categoryData.get(i).getName().equals(item.getProductCategory())) {
+                    choiceBoxCategory.setValue(categoryData.get(i));
+                }
+            }
+
+            buttonState = "listener";
+            enableDisableButtons("listener");
+            disableFields();
+        } else {
+            clearFields();
+        }
+    }
+    // </editor-fold>
 }
