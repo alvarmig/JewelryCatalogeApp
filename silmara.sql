@@ -90,3 +90,72 @@ JOIN product_categories pc
 WHERE category_name LIKE "aretes"
 ORDER BY p.product_id ASC;
 
+DELIMITER $$ 
+	CREATE PROCEDURE selectProducts()
+    BEGIN
+		SELECT 
+			p.product_id AS id, 
+			p.product_name AS name, 
+			p.product_description AS description, 
+			p.product_price AS price, 
+			p.product_stock AS stock,
+			pc.category_name AS category
+		FROM products p
+		JOIN product_categories pc
+			ON p.product_category_id =pc.category_id
+		ORDER BY p.product_id ASC;
+    END$$ 
+
+DELIMITER ; 
+
+CALL selectProducts ;
+
+DROP PROCEDURE selectProducts;
+
+
+DELIMITER $$ 
+	CREATE PROCEDURE selectProductsCaregory(IN param VARCHAR(20))
+    BEGIN
+		SELECT 
+			p.product_id AS id, 
+			p.product_name AS name, 
+			p.product_description AS description, 
+			p.product_price AS price, 
+			p.product_stock AS stock,
+			pc.category_name AS category
+		FROM products p
+		JOIN product_categories pc
+			ON p.product_category_id =pc.category_id
+            WHERE category_name = param
+		ORDER BY p.product_id ASC;
+    END$$ 
+
+DELIMITER ; 
+
+CALL selectProductsCaregory("cadenas lentes");
+
+DROP PROCEDURE selectProductsCaregory;
+
+
+DELIMITER $$ 
+	CREATE PROCEDURE selectProductsByID(IN param INT)
+    BEGIN
+		SELECT 
+			p.product_id AS id, 
+			p.product_name AS name, 
+			p.product_description AS description, 
+			p.product_price AS price, 
+			p.product_stock AS stock,
+			pc.category_name AS category
+		FROM products p
+		JOIN product_categories pc
+			ON p.product_category_id =pc.category_id
+            WHERE product_id = param
+		ORDER BY p.product_id ASC;
+    END$$ 
+
+DELIMITER ; 
+
+CALL selectProductsByID(1);
+
+DROP PROCEDURE selectProductsCaregory;
